@@ -92,7 +92,7 @@ class Extractor:
             try:
                 response = await asyncio.wait_for(
                     self._llm.async_chat(system_msg[0]["content"], hist, conf),
-                    timeout=60 * 60,
+                    timeout=60 * 720,
                 )
                 response = self._normalize_response_text(response)
                 response = re.sub(r"^.*</think>", "", response, flags=re.DOTALL)

@@ -61,7 +61,7 @@ class RecursiveAbstractiveProcessing4TreeOrganizedRetrieval:
             logging.info(log_msg)
             raise TaskCanceledException(f"Task {task_id} was cancelled")
 
-    @timeout(60 * 20)
+    @timeout(60 * 720)
     async def _chat(self, system, history, gen_conf):
         cached = await thread_pool_exec(get_llm_cache, self._llm_model.llm_name, system, history, gen_conf)
         if cached:
@@ -116,7 +116,7 @@ class RecursiveAbstractiveProcessing4TreeOrganizedRetrieval:
         layers = [(0, len(chunks))]
         start, end = 0, len(chunks)
 
-        @timeout(60 * 20)
+        @timeout(60 * 720)
         async def summarize(ck_idx: list[int]):
             nonlocal chunks
 
