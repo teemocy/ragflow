@@ -100,7 +100,7 @@ class CommunityReportsExtractor(Extractor):
             text = perform_variable_replacements(self._extraction_prompt, variables=prompt_variables)
             async with chat_limiter:
                 try:
-                    timeout = 180 if enable_timeout_assertion else 1000000000
+                    timeout = 1800 if enable_timeout_assertion else 1000000000
                     response = await asyncio.wait_for(self._async_chat(text, [{"role": "user", "content": "Output:"}], {}, task_id), timeout=timeout)
                 except asyncio.TimeoutError:
                     logging.warning("extract_community_report._async_chat timeout, skipping...")

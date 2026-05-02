@@ -112,7 +112,7 @@ class EntityResolution(Extractor):
             async with semaphore:
                 try:
                     enable_timeout_assertion = os.environ.get("ENABLE_TIMEOUT_ASSERTION")
-                    timeout_sec = 280 if enable_timeout_assertion else 1_000_000_000
+                    timeout_sec = 3600 if enable_timeout_assertion else 1_000_000_000
 
                     try:
                         await asyncio.wait_for(

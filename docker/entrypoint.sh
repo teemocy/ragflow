@@ -236,6 +236,70 @@ function ensure_docling() {
       || uv pip install -i https://pypi.tuna.tsinghua.edu.cn/simple --extra-index-url https://pypi.org/simple --no-cache-dir "docling${DOCLING_PIN}"
 }
 
+function ensure_mysql_connection() {
+    # Read MySQL config from the generated service_conf.yaml
+    local db_name db_user db_pass db_host db_port
+    db_name="$("$PY" -c "import yaml; c=yaml.safe_load(open('/ragflow/conf/service_conf.yaml'))['mysql']; print(c['name'])")"
+    db_user="$("$PY" -c "import yaml; c=yaml.safe_load(open('/ragflow/conf/service_conf.yaml'))['mysql']; print(c['user'])")"
+    db_pass="$("$PY" -c "import yaml; c=yaml.safe_load(open('/ragflow/conf/service_conf.yaml'))['mysql']; print(c['password'])")"
+    db_host="$("$PY" -c "import yaml; c=yaml.safe_load(open('/ragflow/conf/service_conf.yaml'))['mysql']; print(c['host'])")"
+    db_port="$("$PY" -c "import yaml; c=yaml.safe_load(open('/ragflow/conf/service_conf.yaml'))['mysql']; print(c['port'])")"
+
+    echo "[check] Testing MySQL connection: ${db_user}@${db_host}:${db_port}/${db_name} ..."
+    local max_attempts=30
+    local attempt=1
+    while [ $attempt -le $max_attempts ]; do
+        if "$PY" -c "
+import pymysql
+conn = pymysql.connect(host='${db_host}', port=${db_port}, user='${db_user}', password='${db_pass}', database='${db_name}', connect_timeout=5)
+conn.close()
+" 2>/dev/null; then
+            echo "[check] MySQL connection OK."
+            return 0
+        fi
+        # Check if MySQL is reachable but auth fails
+        if "$PY" -c "
+import pymysql
+try:
+    pymysql.connect(host='${db_host}', port=${db_port}, user='${db_user}', password='${db_pass}', connect_timeout=5)
+except pymysql.err.OperationalError as e:
+    if e.args[0] == 1045:
+        raise SystemExit(1)
+    raise SystemExit(2)
+" 2>/dev/null; then
+            :  # unknown state, retry
+        else
+            local rc=$?
+            if [ $rc -eq 1 ]; then
+                echo ""
+                echo "============================================"
+                echo "  FATAL: MySQL authentication failed!"
+                echo "============================================"
+                echo "  The password in .env (MYSQL_PASSWORD=${db_pass})"
+                echo "  does not match the MySQL root password."
+                echo ""
+                echo "  This usually happens when MySQL volume has"
+                echo "  old data with a different password."
+                echo ""
+                echo "  Fix: pick one of the following:"
+                echo "    1) Reset all data:"
+                echo "       docker compose down -v && docker compose up -d"
+                echo ""
+                echo "    2) Update .env MYSQL_PASSWORD to match the"
+                echo "       original password used when MySQL was first"
+                echo "       initialized."
+                echo "============================================"
+                exit 1
+            fi
+        fi
+        echo "[check] Waiting for MySQL to be ready... (attempt ${attempt}/${max_attempts})"
+        sleep 2
+        attempt=$((attempt + 1))
+    done
+    echo "[check] ERROR: MySQL not reachable after ${max_attempts} attempts."
+    exit 1
+}
+
 function ensure_db_init() {
     echo "Initializing database tables..."
     "$PY" -c "from api.db.db_models import init_database_tables as init_web_db; init_web_db()"
@@ -264,6 +328,7 @@ function wait_for_server() {
 # Start components based on flags
 # -----------------------------------------------------------------------------
 ensure_docling
+ensure_mysql_connection
 ensure_db_init
 
 if [[ "${ENABLE_WEBSERVER}" -eq 1 ]]; then
