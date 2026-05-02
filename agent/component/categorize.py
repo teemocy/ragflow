@@ -105,7 +105,7 @@ class Categorize(LLM, ABC):
             logging.warning(f"[Categorize] input element not detected for query key: {query_key}")
         return elements
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60 * 1440)))
     async def _invoke_async(self, **kwargs):
         if self.check_if_canceled("Categorize processing"):
             return
@@ -157,7 +157,7 @@ class Categorize(LLM, ABC):
         self.set_output("category_name", max_category)
         self.set_output("_next", cpn_ids)
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60 * 1440)))
     def _invoke(self, **kwargs):
         return asyncio.run(self._invoke_async(**kwargs))
 

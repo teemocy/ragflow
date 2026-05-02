@@ -61,7 +61,7 @@ class RecursiveAbstractiveProcessing4TreeOrganizedRetrieval:
             logging.info(log_msg)
             raise TaskCanceledException(f"Task {task_id} was cancelled")
 
-    @timeout(60 * 720)
+    @timeout(60 * 1440)
     async def _chat(self, system, history, gen_conf):
         cached = await thread_pool_exec(get_llm_cache, self._llm_model.llm_name, system, history, gen_conf)
         if cached:
@@ -84,7 +84,7 @@ class RecursiveAbstractiveProcessing4TreeOrganizedRetrieval:
 
         raise last_exc if last_exc else Exception("LLM chat failed without exception")
 
-    @timeout(20)
+    @timeout(60 * 30)
     async def _embedding_encode(self, txt):
         response = await thread_pool_exec(get_embed_cache, self._embd_model.llm_name, txt)
         if response is not None:
@@ -116,7 +116,7 @@ class RecursiveAbstractiveProcessing4TreeOrganizedRetrieval:
         layers = [(0, len(chunks))]
         start, end = 0, len(chunks)
 
-        @timeout(60 * 720)
+        @timeout(60 * 1440)
         async def summarize(ck_idx: list[int]):
             nonlocal chunks
 

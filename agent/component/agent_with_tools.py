@@ -185,7 +185,7 @@ class Agent(LLM, ToolBase):
     def _invoke(self, **kwargs):
         return asyncio.run(self._invoke_async(**kwargs))
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 20 * 60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60 * 1440)))
     async def _invoke_async(self, **kwargs):
         if self.check_if_canceled("Agent processing"):
             return

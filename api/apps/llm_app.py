@@ -67,7 +67,7 @@ async def set_api_key():
     base_url = req.get("base_url", "")
     source_factory = req.get("source_fid", factory)
     extra = {"provider": factory}
-    timeout_seconds = int(os.environ.get("LLM_TIMEOUT_SECONDS", 10))
+    timeout_seconds = int(os.environ.get("LLM_TIMEOUT_SECONDS", 60 * 30))
     source_llms = list(LLMService.query(fid=source_factory))
     if not source_llms:
         msg = f"No models configured for {factory} (source: {source_factory})."
@@ -164,7 +164,7 @@ async def add_llm():
     factory = req["llm_factory"]
     api_key = req.get("api_key", "x")
     llm_name = req.get("llm_name")
-    timeout_seconds = int(os.environ.get("LLM_TIMEOUT_SECONDS", 10))
+    timeout_seconds = int(os.environ.get("LLM_TIMEOUT_SECONDS", 60 * 30))
 
     if factory not in [f.name for f in get_allowed_llm_factories()]:
         return get_data_error_result(message=f"LLM factory {factory} is not allowed")

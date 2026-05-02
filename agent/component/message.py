@@ -233,7 +233,7 @@ class Message(ComponentBase):
         ]
         return any([re.search(p, content) for p in patt])
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10*60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60 * 1440)))
     def _invoke(self, **kwargs):
         if self.check_if_canceled("Message processing"):
             return

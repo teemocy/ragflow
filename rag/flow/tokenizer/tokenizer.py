@@ -92,7 +92,7 @@ class Tokenizer(ProcessBase):
         token_count += c
         tts = np.tile(vts[0], (len(texts), 1))
 
-        @timeout(60)
+        @timeout(60 * 30)
         def batch_encode(txts):
             nonlocal embedding_model
             return embedding_model.encode([truncate(c, embedding_model.max_length - 10) for c in txts])

@@ -52,6 +52,13 @@ services:
       - ./entrypoint.sh:/ragflow/entrypoint.sh
       - ../rag/graphrag:/ragflow/rag/graphrag
       - ../rag/raptor.py:/ragflow/rag/raptor.py
+      - ../rag/svr/task_executor.py:/ragflow/rag/svr/task_executor.py
+      - ../rag/flow:/ragflow/rag/flow
+      - ../rag/llm/embedding_model.py:/ragflow/rag/llm/embedding_model.py
+      - ../agent/component:/ragflow/agent/component
+      - ../deepdoc/parser/figure_parser.py:/ragflow/deepdoc/parser/figure_parser.py
+      - ../api/apps/llm_app.py:/ragflow/api/apps/llm_app.py
+      - ../api/utils/api_utils.py:/ragflow/api/utils/api_utils.py
     env_file: .env
     networks:
       - ragflow

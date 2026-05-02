@@ -242,7 +242,7 @@ async def get_storage_binary(bucket, name):
     return await thread_pool_exec(settings.STORAGE_IMPL.get, bucket, name)
 
 
-@timeout(60 * 80, 1)
+@timeout(60 * 1440, 1)
 async def build_chunks(task, progress_callback):
     if task["size"] > settings.DOC_MAXIMUM_SIZE:
         set_progress(task["id"], prog=-1, msg="File size exceeds( <= %dMb )" %
@@ -622,7 +622,7 @@ async def embedding(docs, mdl, parser_config=None, callback=None):
         tts = np.tile(vts[0], (len(cnts), 1))
         tk_count += c
 
-    @timeout(60)
+    @timeout(60 * 30)
     def batch_encode(txts):
         nonlocal mdl
         return mdl.encode([truncate(c, mdl.max_length - 10) for c in txts])
@@ -712,7 +712,7 @@ async def run_dataflow(task: dict):
             embd_model_config = get_model_config_by_type_and_name(task["tenant_id"], LLMType.EMBEDDING, embedding_id)
             embedding_model = LLMBundle(task["tenant_id"], embd_model_config)
 
-            @timeout(60)
+            @timeout(60 * 30)
             def batch_encode(txts):
                 nonlocal embedding_model
                 return embedding_model.encode([truncate(c, embedding_model.max_length - 10) for c in txts])
@@ -836,7 +836,7 @@ async def has_raptor_chunks(doc_id: str, tenant_id: str, kb_id: str) -> bool:
         return False
 
 
-@timeout(3600)
+@timeout(60 * 1440)
 async def run_raptor_for_kb(row, kb_parser_config, chat_mdl, embd_mdl, vector_size, callback=None, doc_ids=[]):
     fake_doc_id = GRAPH_RAPTOR_FAKE_DOC_ID
 
@@ -1046,7 +1046,7 @@ async def insert_chunks(task_id, task_tenant_id, task_dataset_id, chunks, progre
     return True
 
 
-@timeout(60 * 60 * 3, 1)
+@timeout(60 * 1440, 1)
 async def do_handle_task(task):
     task_type = task.get("task_type", "")
 

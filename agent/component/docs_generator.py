@@ -82,7 +82,7 @@ class DocGenerator(Message, ABC):
             }
         }
 
-    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 10 * 60)))
+    @timeout(int(os.environ.get("COMPONENT_EXEC_TIMEOUT", 60 * 1440)))
     def _invoke(self, **kwargs):
         file_path = None
         try:

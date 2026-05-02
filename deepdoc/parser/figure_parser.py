@@ -142,7 +142,7 @@ def vision_figure_parser_docx_wrapper_naive(chunks, idx_lst, callback=None, **kw
     except Exception:
         vision_model = None
     if vision_model:
-        @timeout(30, 3)
+        @timeout(60 * 30, 3)
         def worker(idx, ck):
             img, close_after = open_image_for_processing(ck.get("image"), allow_bytes=True)
             if not isinstance(img, Image.Image):
@@ -242,7 +242,7 @@ class VisionFigureParser:
     def __call__(self, **kwargs):
         callback = kwargs.get("callback", lambda prog, msg: None)
 
-        @timeout(30, 3)
+        @timeout(60 * 30, 3)
         def process(figure_idx, figure_binary):
             context_above = ""
             context_below = ""

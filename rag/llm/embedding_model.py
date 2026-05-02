@@ -1016,7 +1016,7 @@ class VolcEngineEmbed(Base):
         total_tokens = 0
         for text in texts:
             request_body = {"model": self.model_name, "input": [{"type": "text", "text": text}]}
-            response = sync_request(method="POST", url=url, headers=headers, json=request_body, timeout=60)
+            response = sync_request(method="POST", url=url, headers=headers, json=request_body, timeout=60*30)
             if response.status_code != 200:
                 raise Exception(f"Error: {response.status_code} - {response.text}")
             result = response.json()

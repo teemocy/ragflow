@@ -756,19 +756,19 @@ async def is_strong_enough(chat_model, embedding_model):
     if isinstance(count, int) and count <= 0:
         return
 
-    @timeout(60, 2)
+    @timeout(60 * 30, 2)
     async def _is_strong_enough():
         nonlocal chat_model, embedding_model
         if embedding_model:
             await asyncio.wait_for(
                 thread_pool_exec(embedding_model.encode, ["Are you strong enough!?"]),
-                timeout=10
+                timeout=60 * 30
             )
 
         if chat_model:
             res = await asyncio.wait_for(
                 chat_model.async_chat("Nothing special.", [{"role": "user", "content": "Are you strong enough!?"}]),
-                timeout=30
+                timeout=60 * 30
             )
             if "**ERROR**" in res:
                 raise Exception(res)

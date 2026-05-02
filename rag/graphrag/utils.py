@@ -317,7 +317,7 @@ async def graph_node_to_chunk(kb_id, embd_mdl, ent_name, meta, chunks):
     ebd = get_embed_cache(embd_mdl.llm_name, ent_name)
     if ebd is None:
         async with chat_limiter:
-            timeout = 3 if enable_timeout_assertion else 30000000
+            timeout = 60 * 30 if enable_timeout_assertion else 30000000
             ebd, _ = await asyncio.wait_for(
                 thread_pool_exec(embd_mdl.encode, [ent_name]),
                 timeout=timeout
@@ -329,7 +329,7 @@ async def graph_node_to_chunk(kb_id, embd_mdl, ent_name, meta, chunks):
     chunks.append(chunk)
 
 
-@timeout(3, 3)
+@timeout(60 * 30, 3)
 async def get_relation(tenant_id, kb_id, from_ent_name, to_ent_name, size=1):
     ents = from_ent_name
     if isinstance(ents, str):
@@ -371,7 +371,7 @@ async def graph_edge_to_chunk(kb_id, embd_mdl, from_ent_name, to_ent_name, meta,
     ebd = get_embed_cache(embd_mdl.llm_name, txt)
     if ebd is None:
         async with chat_limiter:
-            timeout = 3 if enable_timeout_assertion else 300000000
+            timeout = 60 * 30 if enable_timeout_assertion else 300000000
             ebd, _ = await asyncio.wait_for(
                 thread_pool_exec(
                     embd_mdl.encode,
@@ -568,7 +568,7 @@ async def set_graph(tenant_id: str, kb_id: str, embd_mdl, graph: nx.Graph, chang
     enable_timeout_assertion = os.environ.get("ENABLE_TIMEOUT_ASSERTION")
     es_bulk_size = 4
     for b in range(0, len(chunks), es_bulk_size):
-        timeout = 3 if enable_timeout_assertion else 30000000
+        timeout = 60 * 30 if enable_timeout_assertion else 30000000
         max_retries = 3
         for attempt in range(max_retries):
             task = asyncio.create_task(

@@ -524,7 +524,7 @@ async def generate_subgraph(
     return subgraph
 
 
-@timeout(60 * 3)
+@timeout(60 * 30)
 async def merge_subgraph(
     tenant_id: str,
     kb_id: str,
@@ -554,7 +554,7 @@ async def merge_subgraph(
     return new_graph
 
 
-@timeout(60 * 30, 1)
+@timeout(60 * 1440, 1)
 async def resolve_entities(
     graph,
     subgraph_nodes: set[str],
@@ -590,7 +590,7 @@ async def resolve_entities(
     callback(msg=f"Graph resolution done in {now - start:.2f}s.")
 
 
-@timeout(60 * 30, 1)
+@timeout(60 * 1440, 1)
 async def extract_community(
     graph,
     tenant_id: str,
