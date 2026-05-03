@@ -70,6 +70,7 @@ volumes:
   - ../deepdoc/parser/figure_parser.py:/ragflow/deepdoc/parser/figure_parser.py
   - ../api/apps/llm_app.py:/ragflow/api/apps/llm_app.py
   - ../api/utils/api_utils.py:/ragflow/api/utils/api_utils.py
+  - ../mcp/server/server.py:/ragflow/mcp/server/server.py
 ```
 
 ## Deploy to New Machine

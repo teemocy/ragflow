@@ -171,6 +171,116 @@ class RAGFlowConnector:
             result_list.append(json.dumps(d, ensure_ascii=False))
         return "\n".join(result_list)
 
+    async def get_dataset(self, *, api_key: str, dataset_id: str):
+        """Get a single dataset's full details."""
+        res = await self._get(f"/datasets/{dataset_id}", api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def list_documents(self, *, api_key: str, dataset_id: str, page: int = 1, page_size: int = 30, orderby: str = "create_time", desc: bool = True, name: str | None = None, id: str | None = None, run: str | None = None):
+        """List documents in a dataset."""
+        params = {"page": page, "page_size": page_size, "orderby": orderby, "desc": desc}
+        if name:
+            params["name"] = name
+        if id:
+            params["id"] = id
+        if run:
+            params["run"] = run
+        res = await self._get(f"/datasets/{dataset_id}/documents", params, api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def get_document(self, *, api_key: str, dataset_id: str, document_id: str):
+        """Get a single document's details."""
+        res = await self._get(f"/datasets/{dataset_id}/documents/{document_id}", api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def list_chunks(self, *, api_key: str, dataset_id: str, document_id: str, page: int = 1, page_size: int = 30, keywords: str | None = None, available: bool | None = None, id: str | None = None):
+        """List chunks of a document."""
+        params = {"page": page, "page_size": page_size}
+        if keywords:
+            params["keywords"] = keywords
+        if available is not None:
+            params["available"] = available
+        if id:
+            params["id"] = id
+        res = await self._get(f"/datasets/{dataset_id}/documents/{document_id}/chunks", params, api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def get_chunk(self, *, api_key: str, dataset_id: str, document_id: str, chunk_id: str):
+        """Get a single chunk's content."""
+        res = await self._get(f"/datasets/{dataset_id}/documents/{document_id}/chunks/{chunk_id}", api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def get_graph(self, *, api_key: str, dataset_id: str):
+        """Get the knowledge graph of a dataset."""
+        res = await self._get(f"/datasets/{dataset_id}/graph", api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def search_graph(self, *, api_key: str, dataset_id: str, query: str):
+        """Search the knowledge graph of a dataset."""
+        res = await self._get(f"/datasets/{dataset_id}/graph/search", {"query": query}, api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
+    async def search_dataset(self, *, api_key: str, dataset_id: str, question: str, doc_ids: list | None = None, page: int = 1, size: int = 30, top_k: int = 1024, similarity_threshold: float = 0.0, vector_similarity_weight: float = 0.3, use_kg: bool = False, keyword: bool = False, rerank_id: str | None = None, meta_data_filter: dict | None = None):
+        """Search within a specific dataset."""
+        data_json = {
+            "question": question,
+            "page": page,
+            "size": size,
+            "top_k": top_k,
+            "similarity_threshold": similarity_threshold,
+            "vector_similarity_weight": vector_similarity_weight,
+            "use_kg": use_kg,
+            "keyword": keyword,
+        }
+        if doc_ids:
+            data_json["doc_ids"] = doc_ids
+        if rerank_id:
+            data_json["rerank_id"] = rerank_id
+        if meta_data_filter:
+            data_json["meta_data_filter"] = meta_data_filter
+        res = await self._post(f"/datasets/{dataset_id}/search", json=data_json, api_key=api_key)
+        if not res or res.status_code != 200:
+            raise Exception([types.TextContent(type="text", text="Cannot process this operation.")])
+        res_json = res.json()
+        if res_json.get("code") != 0:
+            raise Exception([types.TextContent(type="text", text=res_json.get("message", "Cannot process this operation."))])
+        return [types.TextContent(type="text", text=json.dumps(res_json["data"], ensure_ascii=False))]
+
     async def resolve_dataset_ids(self, *, api_key: str):
         """Resolve all accessible dataset IDs for MCP retrieval fallback."""
         logging.info("Resolving accessible dataset IDs for MCP retrieval")
@@ -528,6 +638,137 @@ async def list_tools(*, connector: RAGFlowConnector, api_key: str) -> list[types
                 "required": ["question"],
             },
         ),
+        types.Tool(
+            name="ragflow_list_datasets",
+            description="List all accessible datasets (knowledge bases). Returns dataset IDs, names, descriptions, document counts, and chunk counts. Use this to discover what datasets are available before searching.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "page": {"type": "integer", "description": "Page number", "default": 1, "minimum": 1},
+                    "page_size": {"type": "integer", "description": "Items per page", "default": 30, "minimum": 1, "maximum": 1000},
+                    "orderby": {"type": "string", "description": "Sort field", "default": "create_time"},
+                    "desc": {"type": "boolean", "description": "Sort descending", "default": True},
+                    "id": {"type": "string", "description": "Filter by dataset ID"},
+                    "name": {"type": "string", "description": "Filter by dataset name"},
+                },
+            },
+        ),
+        types.Tool(
+            name="ragflow_get_dataset",
+            description="Get full details of a specific dataset (knowledge base) including parser config, embedding model, chunk method, etc.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                },
+                "required": ["dataset_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_list_documents",
+            description="List documents in a dataset. Returns document IDs, names, sizes, chunk counts, processing status, etc.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                    "page": {"type": "integer", "description": "Page number", "default": 1, "minimum": 1},
+                    "page_size": {"type": "integer", "description": "Items per page", "default": 30, "minimum": 1, "maximum": 1000},
+                    "orderby": {"type": "string", "description": "Sort field", "default": "create_time"},
+                    "desc": {"type": "boolean", "description": "Sort descending", "default": True},
+                    "name": {"type": "string", "description": "Filter by document name"},
+                    "id": {"type": "string", "description": "Filter by document ID"},
+                    "run": {"type": "string", "description": "Filter by processing status (e.g. 'RUNNING', 'SUCCESS', 'FAIL')"},
+                },
+                "required": ["dataset_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_get_document",
+            description="Get details of a specific document including its metadata, processing status, chunk count, and token count.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                    "document_id": {"type": "string", "description": "The document ID"},
+                },
+                "required": ["dataset_id", "document_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_list_chunks",
+            description="List chunks of a document. Returns chunk content, IDs, keywords, and other metadata. Useful for inspecting how a document was split.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                    "document_id": {"type": "string", "description": "The document ID"},
+                    "page": {"type": "integer", "description": "Page number", "default": 1, "minimum": 1},
+                    "page_size": {"type": "integer", "description": "Items per page", "default": 30, "minimum": 1, "maximum": 1000},
+                    "keywords": {"type": "string", "description": "Filter by keywords"},
+                    "available": {"type": "boolean", "description": "Filter by availability"},
+                    "id": {"type": "string", "description": "Filter by chunk ID"},
+                },
+                "required": ["dataset_id", "document_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_get_chunk",
+            description="Get the full content and metadata of a single chunk.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                    "document_id": {"type": "string", "description": "The document ID"},
+                    "chunk_id": {"type": "string", "description": "The chunk ID"},
+                },
+                "required": ["dataset_id", "document_id", "chunk_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_get_graph",
+            description="Get the knowledge graph of a dataset. Returns graph nodes and edges representing entities and relationships extracted from documents.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                },
+                "required": ["dataset_id"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_search_graph",
+            description="Search the knowledge graph of a dataset for entities and relationships matching a query.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID"},
+                    "query": {"type": "string", "description": "The search query for the knowledge graph"},
+                },
+                "required": ["dataset_id", "query"],
+            },
+        ),
+        types.Tool(
+            name="ragflow_search_dataset",
+            description="Search within a specific dataset. Similar to ragflow_retrieval but scoped to a single dataset and supports knowledge graph integration via use_kg flag.",
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "dataset_id": {"type": "string", "description": "The dataset ID to search within"},
+                    "question": {"type": "string", "description": "The search question"},
+                    "doc_ids": {"type": "array", "items": {"type": "string"}, "description": "Optional document IDs to narrow search"},
+                    "page": {"type": "integer", "description": "Page number", "default": 1, "minimum": 1},
+                    "size": {"type": "integer", "description": "Number of results per page", "default": 30, "minimum": 1},
+                    "top_k": {"type": "integer", "description": "Maximum results to consider before ranking", "default": 1024, "minimum": 1},
+                    "similarity_threshold": {"type": "number", "description": "Minimum similarity threshold", "default": 0.0, "minimum": 0.0, "maximum": 1.0},
+                    "vector_similarity_weight": {"type": "number", "description": "Weight for vector vs term similarity", "default": 0.3, "minimum": 0.0, "maximum": 1.0},
+                    "use_kg": {"type": "boolean", "description": "Enable knowledge graph assisted search", "default": False},
+                    "keyword": {"type": "boolean", "description": "Enable keyword-based search", "default": False},
+                    "rerank_id": {"type": "string", "description": "Optional reranking model identifier"},
+                    "meta_data_filter": {"type": "object", "description": "Optional metadata filter criteria"},
+                },
+                "required": ["dataset_id", "question"],
+            },
+        ),
     ]
 
 
@@ -566,6 +807,85 @@ async def call_tool(
             top_k=top_k,
             rerank_id=rerank_id,
             force_refresh=force_refresh,
+        )
+    elif name == "ragflow_list_datasets":
+        res_json = await connector._fetch_datasets_page(
+            api_key=api_key,
+            page=arguments.get("page", 1),
+            page_size=arguments.get("page_size", 30),
+            orderby=arguments.get("orderby", "create_time"),
+            desc=arguments.get("desc", True),
+            id=arguments.get("id"),
+            name=arguments.get("name"),
+        )
+        return [types.TextContent(type="text", text=json.dumps(res_json, ensure_ascii=False))]
+    elif name == "ragflow_get_dataset":
+        return await connector.get_dataset(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+        )
+    elif name == "ragflow_list_documents":
+        return await connector.list_documents(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            page=arguments.get("page", 1),
+            page_size=arguments.get("page_size", 30),
+            orderby=arguments.get("orderby", "create_time"),
+            desc=arguments.get("desc", True),
+            name=arguments.get("name"),
+            id=arguments.get("id"),
+            run=arguments.get("run"),
+        )
+    elif name == "ragflow_get_document":
+        return await connector.get_document(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            document_id=arguments["document_id"],
+        )
+    elif name == "ragflow_list_chunks":
+        return await connector.list_chunks(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            document_id=arguments["document_id"],
+            page=arguments.get("page", 1),
+            page_size=arguments.get("page_size", 30),
+            keywords=arguments.get("keywords"),
+            available=arguments.get("available"),
+            id=arguments.get("id"),
+        )
+    elif name == "ragflow_get_chunk":
+        return await connector.get_chunk(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            document_id=arguments["document_id"],
+            chunk_id=arguments["chunk_id"],
+        )
+    elif name == "ragflow_get_graph":
+        return await connector.get_graph(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+        )
+    elif name == "ragflow_search_graph":
+        return await connector.search_graph(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            query=arguments["query"],
+        )
+    elif name == "ragflow_search_dataset":
+        return await connector.search_dataset(
+            api_key=api_key,
+            dataset_id=arguments["dataset_id"],
+            question=arguments["question"],
+            doc_ids=arguments.get("doc_ids"),
+            page=arguments.get("page", 1),
+            size=arguments.get("size", 30),
+            top_k=arguments.get("top_k", 1024),
+            similarity_threshold=arguments.get("similarity_threshold", 0.0),
+            vector_similarity_weight=arguments.get("vector_similarity_weight", 0.3),
+            use_kg=arguments.get("use_kg", False),
+            keyword=arguments.get("keyword", False),
+            rerank_id=arguments.get("rerank_id"),
+            meta_data_filter=arguments.get("meta_data_filter"),
         )
     raise ValueError(f"Tool not found: {name}")
 
